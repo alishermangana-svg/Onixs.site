@@ -5,7 +5,7 @@ import { services } from "@/content/services";
 
 const quickLinks = [
   { href: "/", label: "Home" },
-  { href: "/#about", label: "About Us" },
+  { href: "/about", label: "About Us" },
   { href: "/contact", label: "Contact Us" },
   { href: "/blog", label: "Blog" },
   { href: "/privacy", label: "Privacy Policy" },

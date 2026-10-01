@@ -7,9 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { site } from "@/content/site";
 import {
   leakCards,
-  processSteps,
   services,
-  whyCards,
 } from "@/content/services";
 import { stats, workItems, showcaseWebsites } from "@/content/work";
 import {
@@ -195,7 +193,73 @@ export function HomePage() {
       <main>
         <HeroSection onBookCall={() => setContactOpen(true)} />
 
-        {/* SERVICES */}
+        {/* 1. Studio visuals */}
+        <section className="bg-white py-10 md:py-14">
+          <div className="container-x">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div className="max-w-2xl">
+                <h2 className="h-section mt-3 text-navy-ink">
+                  Built in London. Shipped worldwide.
+                </h2>
+                <p className="mt-3 text-muted">
+                  A peek at the products and craft behind Onixs — full process
+                  and studio story on our About page.
+                </p>
+              </div>
+              <Link href="/about" className="btn-ghost shrink-0 self-start sm:self-auto">
+                About Onixs →
+              </Link>
+            </div>
+
+            <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                {
+                  src: "/images/About-us-2-768x512.webp",
+                  alt: "Onixs London studio",
+                  label: "Studio",
+                },
+                {
+                  src: "/work/pocket-guide-ai.webp",
+                  alt: "Pocket Guide product",
+                  label: "Product",
+                },
+                {
+                  src: "/work/castle-auction.webp",
+                  alt: "Castle Auction website",
+                  label: "Web",
+                },
+                {
+                  src: "/work/Pocket-Guide-App-Mockup-2.webp",
+                  alt: "Mobile app mockup",
+                  label: "Apps",
+                },
+              ].map((item) => (
+                <Link
+                  key={item.src}
+                  href="/about"
+                  className="group relative block overflow-hidden rounded-[20px] border border-border-light bg-mist"
+                >
+                  <div className="relative aspect-[4/5] sm:aspect-[3/4]">
+                    <Image
+                      src={item.src}
+                      alt={item.alt}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      className="object-cover transition duration-500 group-hover:scale-[1.03]"
+                      quality={75}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#041f1c]/70 via-[#041f1c]/10 to-transparent" />
+                    <span className="absolute bottom-4 left-4 rounded-full bg-white/95 px-3 py-1 text-xs font-bold text-navy-ink">
+                      {item.label}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* 2. SERVICES */}
         <section id="services" className="bg-white py-10 text-navy-ink md:py-14">
           <div className="container-x">
             <Reveal>
@@ -249,7 +313,7 @@ export function HomePage() {
           </div>
         </section>
 
-        {/* THE LEAK */}
+        {/* 3. THE LEAK */}
         <section className="bg-white py-10 md:py-14">
           <div className="container-x">
             <Reveal>
@@ -279,47 +343,7 @@ export function HomePage() {
           </div>
         </section>
 
-        {/* PROCESS + WHY (merged) */}
-        <section id="about" className="bg-white py-10 md:py-14">
-          <div className="container-x">
-            <Reveal>
-              <h2 className="h-section mt-3 max-w-3xl text-navy-ink">
-                A clear process, and more than a vendor.
-              </h2>
-              <p className="mt-4 max-w-2xl text-body-light">
-                We design, ship, and grow digital products as one team, with the
-                same standards from first brief to long-term support.
-              </p>
-            </Reveal>
-            <div className="mt-12 grid gap-3.5 sm:grid-cols-2 lg:grid-cols-5">
-              {processSteps.map((s, i) => (
-                <Reveal key={s.id} delay={i * 0.05}>
-                  <article className="h-full rounded-[18px] border border-border-light bg-card p-6">
-                    <span className="font-display text-[13px] font-bold text-brand">
-                      {s.id}
-                    </span>
-                    <h3 className="mt-4 text-lg font-bold text-navy-ink">{s.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-muted">{s.text}</p>
-                  </article>
-                </Reveal>
-              ))}
-            </div>
-            <div className="mt-10 grid gap-4 md:grid-cols-2">
-              {whyCards.map((c, i) => (
-                <Reveal key={c.title} delay={i * 0.05}>
-                  <article className="rounded-[20px] border border-border-light bg-white p-7 shadow-[0_12px_40px_rgba(14,42,92,0.06)]">
-                    <h3 className="text-xl font-bold text-navy-ink">{c.title}</h3>
-                    <p className="mt-3 text-sm leading-relaxed text-body-light">
-                      {c.text}
-                    </p>
-                  </article>
-                </Reveal>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* 3. SELECTED WORK */}
+        {/* 4. SELECTED WORK */}
         <section id="work" className="bg-white py-10 md:py-14">
           <div className="container-x">
             <Reveal className="mb-10 text-center">
