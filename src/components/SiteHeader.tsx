@@ -54,8 +54,8 @@ export function SiteHeader({ onContactOpen, solid = false }: SiteHeaderProps) {
         solid || scrolled ? "header-glass" : "bg-transparent",
       )}
     >
-      <div className="container-x flex h-[4.25rem] items-center justify-between md:h-[4.75rem]">
-        <OnixsLogo href="/" />
+      <div className="container-x flex h-[3.75rem] items-center justify-between gap-3 sm:h-[4.25rem] md:h-[4.75rem]">
+        <OnixsLogo href="/" className="min-w-0" />
 
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Primary">
           {navLinks.map((l) =>

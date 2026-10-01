@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import dynamic from "next/dynamic";
+import { useEffect, useRef, useState } from "react";
 import { site } from "@/content/site";
 import {
   leakCards,
@@ -18,17 +18,21 @@ import {
   engagementModels,
   reviews,
 } from "@/content/reviews";
-import { ContactModal } from "@/components/ui/ContactModal";
 import { SiteHeader } from "@/components/SiteHeader";
 import { HeroSection } from "@/components/HeroSection";
 import { SiteFooter } from "@/components/SiteFooter";
 import { cn } from "@/lib/cn";
 
+const ContactModal = dynamic(
+  () =>
+    import("@/components/ui/ContactModal").then((m) => m.ContactModal),
+  { ssr: false },
+);
+
+/** Lightweight placeholder — no framer / scroll observers on the home path */
 function Reveal({
   children,
   className = "",
-  delay = 0,
-  from = "up",
   style,
 }: {
   children: React.ReactNode;
@@ -37,27 +41,10 @@ function Reveal({
   from?: "up" | "right" | "left" | "bottom";
   style?: React.CSSProperties;
 }) {
-  const reduce = useReducedMotion();
-  const offset =
-    from === "right"
-      ? { x: 88, y: 0 }
-      : from === "left"
-        ? { x: -72, y: 0 }
-        : from === "bottom"
-          ? { x: 0, y: 72 }
-          : { x: 0, y: 18 };
-
   return (
-    <motion.div
-      className={className}
-      style={style}
-      initial={reduce ? false : { opacity: 0, ...offset }}
-      whileInView={{ opacity: 1, x: 0, y: 0 }}
-      viewport={{ once: true, amount: 0.2, margin: "0px 0px -8% 0px" }}
-      transition={{ duration: 0.85, ease: [0.2, 0.7, 0.2, 1], delay }}
-    >
+    <div className={className} style={style}>
       {children}
-    </motion.div>
+    </div>
   );
 }
 
@@ -125,6 +112,8 @@ function WebsitesShowcase() {
                     fill
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     className="object-cover object-top"
+                    loading={i < 2 ? "eager" : "lazy"}
+                    quality={70}
                   />
                 </a>
 
@@ -169,23 +158,35 @@ function WebsitesShowcase() {
 
 export function HomePage() {
   const [contactOpen, setContactOpen] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const progressRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    let raf = 0;
     const onScroll = () => {
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      setProgress(max > 0 ? (window.scrollY / max) * 100 : 0);
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const max =
+          document.documentElement.scrollHeight - window.innerHeight;
+        const p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        if (progressRef.current) {
+          progressRef.current.style.width = `${p}%`;
+        }
+      });
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
   return (
     <>
       <div
+        ref={progressRef}
         className="scroll-progress"
-        style={{ width: `${progress}%` }}
+        style={{ width: "0%" }}
         aria-hidden
       />
 
@@ -329,21 +330,19 @@ export function HomePage() {
                 Six recent cases from onixs.ai: websites, apps, and products we shipped.
               </p>
             </Reveal>
-            <div className="mx-auto w-full max-w-4xl space-y-6">
+            <div className="mx-auto w-full max-w-4xl space-y-4 pb-4 md:space-y-6 md:pb-8">
               {workItems.map((item, i) => (
-                <Reveal
+                <div
                   key={item.slug}
-                  from="bottom"
-                  delay={i * 0.05}
-                  className="sticky z-[1]"
+                  className="relative z-[1] md:sticky"
                   style={{ top: `${5.5 + i * 0.75}rem`, zIndex: i + 1 }}
                 >
-                  <article className="rounded-[22px] border border-border-light bg-white p-5 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] md:p-8">
-                    <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                  <article className="rounded-[18px] border border-border-light bg-white p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] sm:rounded-[22px] sm:p-5 md:p-8">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-5">
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="pulse-live" />
-                          <h3 className="font-display text-xl font-bold text-navy-ink md:text-2xl">
+                          <h3 className="font-display text-lg font-bold text-navy-ink sm:text-xl md:text-2xl">
                             {item.brand}
                           </h3>
                           <span className="rounded-full bg-brand/10 px-2.5 py-0.5 text-[11px] font-bold text-brand">
@@ -364,7 +363,7 @@ export function HomePage() {
                         View case study →
                       </Link>
                     </div>
-                    <div className="mt-5 grid grid-cols-3 gap-2 sm:gap-3">
+                    <div className="mt-4 grid grid-cols-3 gap-1.5 sm:mt-5 sm:gap-3">
                       {(() => {
                         const shots = (
                           item.gallery.length ? item.gallery : [item.image]
@@ -373,7 +372,7 @@ export function HomePage() {
                         return shots.map((src, n) => (
                           <div
                             key={`${item.slug}-${n}`}
-                            className="relative aspect-[4/5] overflow-hidden rounded-xl border border-border-light bg-mist"
+                            className="relative aspect-[4/5] overflow-hidden rounded-lg border border-border-light bg-mist sm:rounded-xl"
                           >
                             <Image
                               src={src}
@@ -382,13 +381,14 @@ export function HomePage() {
                               sizes="(max-width: 640px) 33vw, 280px"
                               className="object-cover object-top"
                               loading={i < 2 && n === 0 ? "eager" : "lazy"}
+                              quality={70}
                             />
                           </div>
                         ));
                       })()}
                     </div>
                   </article>
-                </Reveal>
+                </div>
               ))}
             </div>
           </div>
@@ -597,81 +597,192 @@ export function HomePage() {
           </div>
         </section>
 
-        {/* 7. FAQ */}
-        <section id="faq" className="bg-white py-10 md:py-14" aria-labelledby="faq-heading">
-          <div className="container-x max-w-3xl">
-            <Reveal className="text-center">
-              <h2 id="faq-heading" className="h-section mt-3 text-navy-ink">
-                Questions, answered.
+        {/* 7. FAQ — zigzag path (5 only) */}
+        <section
+          id="faq"
+          className="relative overflow-hidden bg-[#041f1c] py-12 md:py-16"
+          aria-labelledby="faq-heading"
+        >
+          <div
+            className="pointer-events-none absolute inset-0"
+            aria-hidden
+            style={{
+              background:
+                "radial-gradient(ellipse 60% 50% at 20% 100%, rgba(23,184,160,0.18), transparent 55%), radial-gradient(ellipse 50% 40% at 90% 10%, rgba(15,143,124,0.2), transparent 50%)",
+            }}
+          />
+
+          <div className="container-x relative z-10 max-w-2xl">
+            <div className="text-center">
+              <span className="inline-flex items-center rounded-full border border-[#17b8a0]/40 bg-[#0b3b36]/80 px-4 py-1.5 text-[12px] font-semibold text-[#8ae0d2] shadow-[0_0_24px_rgba(23,184,160,0.25)]">
+                Clear answers ↓
+              </span>
+              <h2
+                id="faq-heading"
+                className="mt-5 text-[clamp(1.9rem,4vw,3rem)] font-extrabold tracking-[-0.035em] text-white"
+              >
+                Questions,{" "}
+                <span className="text-[#5dd4c0]">answered.</span>
               </h2>
-              <p className="mt-3 text-muted">
-                Still unsure? Send us the messy version. We&apos;ll reply with the
-                practical next step.
+              <p className="mx-auto mt-3 max-w-md text-sm text-white/65">
+                Five things people ask before we start. Still unsure? Book a
+                call and we&apos;ll talk it through.
               </p>
+            </div>
+
+            <ol className="mt-12 flex list-none flex-col items-center px-1">
+              {faqs.map((f, i) => {
+                const light = i % 2 === 0;
+                /** Zigzag: even items connect on the right, odd on the left */
+                const sideRight = i % 2 === 0;
+                return (
+                  <li key={f.question} className="relative w-full max-w-xl">
+                    <details className="group">
+                      <summary className="cursor-pointer list-none marker:content-none [&::-webkit-details-marker]:hidden">
+                        <div
+                          className={cn(
+                            "rounded-[1.35rem] border px-4 py-3.5 text-center text-[12px] font-semibold leading-snug transition sm:rounded-full sm:px-8 sm:py-[1.15rem] sm:text-[15px]",
+                            light
+                              ? "border-transparent bg-white text-[#062e2a] shadow-[0_14px_40px_rgba(0,0,0,0.22)]"
+                              : "border-white/30 bg-[#031816] text-white",
+                          )}
+                        >
+                          {f.question}
+                        </div>
+                      </summary>
+                      <p className="mx-auto mt-3 max-w-[90%] text-center text-sm leading-relaxed text-white/70">
+                        {f.answer}
+                      </p>
+                    </details>
+
+                    {i < faqs.length - 1 ? (
+                      <div
+                        className={cn(
+                          "mt-1.5 mb-1.5 h-6 w-[7px] rounded-full bg-[#17b8a0]/60",
+                          sideRight ? "ml-[76%]" : "ml-[22%]",
+                        )}
+                        aria-hidden
+                      />
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ol>
+
+            <div className="mt-10 flex justify-center">
               <button
                 type="button"
-                className="btn-primary mt-6"
+                className="inline-flex min-h-12 items-center justify-center rounded-full bg-white px-7 py-3.5 text-sm font-bold text-[#062e2a] transition hover:bg-[#d4f4ee]"
                 onClick={() => setContactOpen(true)}
               >
                 Book a call →
               </button>
-            </Reveal>
-            <div className="mt-10 space-y-3">
-              {faqs.map((f) => (
-                <details
-                  key={f.question}
-                  className="group overflow-hidden rounded-2xl border border-border-light bg-card open:shadow-[0_12px_40px_rgba(0,0,0,0.06)]"
-                >
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-left text-[15px] font-semibold text-navy-ink marker:content-none [&::-webkit-details-marker]:hidden">
-                    <span>{f.question}</span>
-                    <span
-                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border-light text-lg leading-none text-brand transition group-open:bg-brand group-open:text-white"
-                      aria-hidden
-                    >
-                      <span className="group-open:hidden">+</span>
-                      <span className="hidden group-open:inline">−</span>
-                    </span>
-                  </summary>
-                  <div className="border-t border-border-light px-5 py-4 text-sm leading-relaxed text-body-light">
-                    {f.answer}
-                  </div>
-                </details>
-              ))}
             </div>
           </div>
         </section>
 
         {/* 8. CTA BANNER */}
-        <section id="contact" className="bg-white py-10 md:pb-14">
+        <section id="contact" className="bg-white py-10 md:pb-16">
           <div className="container-x">
-            <Reveal>
-              <div className="relative overflow-hidden rounded-[28px] bg-[linear-gradient(135deg,#062e2a,#0b6f61_50%,#0f8f7c)] px-8 py-16 text-center shadow-[0_30px_80px_rgba(11,111,97,0.28)] md:px-16 md:py-20">
-                <h2 className="h-section text-white">
-                  Tell us what&apos;s slowing your brand down.
-                </h2>
-                <p className="mx-auto mt-4 max-w-xl text-white/90">
-                  Send the messy version: the website, the ads, the content, the
-                  idea. We&apos;ll reply with the most practical next step, usually
-                  within a day.
-                </p>
-                <div className="mt-8 flex flex-wrap justify-center gap-3">
-                  <Link
-                    href="/contact"
-                    className="inline-flex min-h-12 items-center justify-center rounded-full bg-white px-7 py-3.5 text-sm font-bold text-[#0b6f61] transition hover:-translate-y-0.5"
-                  >
-                    Contact us →
-                  </Link>
-                  <a
-                    href={site.whatsapp}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex min-h-12 items-center justify-center rounded-full bg-black px-7 py-3.5 text-sm font-bold text-white transition hover:-translate-y-0.5"
-                  >
-                    WhatsApp
-                  </a>
+            <div className="relative overflow-hidden rounded-[28px] bg-[#041f1c]">
+              {/* Atmosphere */}
+              <div
+                className="pointer-events-none absolute inset-0"
+                aria-hidden
+                style={{
+                  background:
+                    "radial-gradient(ellipse 70% 90% at 100% 0%, rgba(23,184,160,0.35), transparent 55%), radial-gradient(ellipse 50% 60% at 0% 100%, rgba(15,143,124,0.22), transparent 50%)",
+                }}
+              />
+              <div
+                className="pointer-events-none absolute inset-0 opacity-[0.18]"
+                aria-hidden
+                style={{
+                  backgroundImage:
+                    "linear-gradient(rgba(255,255,255,0.09) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.09) 1px, transparent 1px)",
+                  backgroundSize: "44px 44px",
+                  maskImage:
+                    "radial-gradient(ellipse 80% 70% at 70% 40%, black, transparent)",
+                }}
+              />
+
+              <div className="relative z-10 grid gap-8 px-5 py-10 sm:gap-10 sm:px-8 sm:py-12 md:grid-cols-[1.2fr_0.8fr] md:items-end md:gap-12 md:px-14 md:py-16 lg:px-16">
+                <div className="min-w-0">
+                  <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#5dd4c0]">
+                    Next step
+                  </p>
+                  <h2 className="mt-3 max-w-xl text-[clamp(1.55rem,5.5vw,3rem)] font-extrabold leading-[1.08] tracking-[-0.035em] text-white">
+                    Tell us what&apos;s slowing your brand down.
+                  </h2>
+                  <p className="mt-4 max-w-lg text-sm leading-relaxed text-white/75 sm:text-[15px] md:text-base">
+                    Send the messy version: the website, the ads, the content,
+                    the idea. We&apos;ll reply with the most practical next step,
+                    usually within a day.
+                  </p>
+
+                  <div className="mt-7 flex w-full flex-col gap-3 sm:mt-8 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
+                    <Link
+                      href="/contact"
+                      className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-white px-7 py-3.5 text-sm font-bold text-[#062e2a] transition hover:bg-[#d4f4ee] sm:w-auto"
+                    >
+                      Contact us →
+                    </Link>
+                    <a
+                      href={site.whatsapp}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex min-h-12 w-full items-center justify-center rounded-full border border-white/25 bg-white/5 px-7 py-3.5 text-sm font-bold text-white backdrop-blur-sm transition hover:border-white/45 hover:bg-white/10 sm:w-auto"
+                    >
+                      WhatsApp
+                    </a>
+                  </div>
+                </div>
+
+                <div className="border-t border-white/15 pt-8 md:border-l md:border-t-0 md:pl-10 md:pt-0 lg:pl-12">
+                  <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-white/45">
+                    Reach the studio
+                  </p>
+                  <ul className="mt-5 space-y-4">
+                    <li>
+                      <a
+                        href={`mailto:${site.email}`}
+                        className="group block"
+                      >
+                        <span className="block text-[11px] font-semibold uppercase tracking-wider text-white/40">
+                          Email
+                        </span>
+                        <span className="mt-0.5 block text-[15px] font-semibold text-white transition group-hover:text-[#5dd4c0]">
+                          {site.email}
+                        </span>
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        href={`tel:${site.phone.replace(/\s/g, "")}`}
+                        className="group block"
+                      >
+                        <span className="block text-[11px] font-semibold uppercase tracking-wider text-white/40">
+                          Phone
+                        </span>
+                        <span className="mt-0.5 block text-[15px] font-semibold text-white transition group-hover:text-[#5dd4c0]">
+                          {site.phoneDisplay}
+                        </span>
+                      </a>
+                    </li>
+                    <li>
+                      <span className="block text-[11px] font-semibold uppercase tracking-wider text-white/40">
+                        Studio
+                      </span>
+                      <span className="mt-0.5 block text-[15px] font-medium leading-snug text-white/80">
+                        {site.streetAddress}
+                        <br />
+                        {site.studioLabel} {site.postalCode}
+                      </span>
+                    </li>
+                  </ul>
                 </div>
               </div>
-            </Reveal>
+            </div>
           </div>
         </section>
       </main>

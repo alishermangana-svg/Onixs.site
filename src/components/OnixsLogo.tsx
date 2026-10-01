@@ -1,82 +1,55 @@
 import Image from "next/image";
 import { cn } from "@/lib/cn";
 
-const LETTERS = [
-  { src: "/logos/onixs-letter-0.png", w: 269, h: 396 },
-  { src: "/logos/onixs-letter-1.png", w: 81, h: 396 },
-  { src: "/logos/onixs-letter-2.png", w: 279, h: 396 },
-  { src: "/logos/onixs-letter-3.png", w: 240, h: 396 },
-] as const;
-
 type OnixsLogoProps = {
   href?: string;
   className?: string;
-  /** Skip slide-in; keep spin + word cycle */
   quiet?: boolean;
   size?: "sm" | "md";
+  /** Use inverted mark for dark backgrounds */
+  invert?: boolean;
 };
 
 export function OnixsLogo({
   href = "/",
   className,
-  quiet = false,
   size = "md",
+  invert = false,
 }: OnixsLogoProps) {
-  const mark = size === "sm" ? "h-8 w-8" : "h-9 w-9 sm:h-10 sm:w-10";
-  const letterH = size === "sm" ? "h-6" : "h-7 sm:h-8";
+  const mark = size === "sm" ? "h-7 w-7" : "h-8 w-8 sm:h-9 sm:w-9";
+  const text = size === "sm" ? "text-lg" : "text-xl sm:text-[1.35rem]";
 
   return (
     <a
       href={href}
       aria-label="Onixs home"
       className={cn(
-        "inline-flex items-center gap-1.5 overflow-visible",
-        !quiet && "logo-intro",
+        "inline-flex max-w-full shrink-0 items-center gap-1.5",
         className,
       )}
     >
-      <span className="relative z-10 inline-flex shrink-0">
-        <span
-          className={cn(
-            "logo-mark logo-mark-spin relative inline-flex shrink-0 overflow-hidden rounded-full bg-transparent",
-            mark,
-          )}
-        >
-          <Image
-            src="/logos/onixs-o.png"
-            alt=""
-            aria-hidden
-            width={256}
-            height={256}
-            className="h-full w-full object-contain"
-            priority={!quiet}
-          />
-        </span>
-      </span>
+      <Image
+        src="/logos/onixs-mark.webp"
+        alt=""
+        aria-hidden
+        width={72}
+        height={72}
+        priority
+        className={cn(
+          "shrink-0 rounded-full object-contain",
+          mark,
+          invert && "brightness-0 invert",
+        )}
+      />
       <span
         className={cn(
-          "logo-word inline-flex items-center gap-0.5",
-          quiet ? "logo-word-static" : "logo-word-cycle",
+          "font-display font-bold tracking-[-0.04em]",
+          text,
+          invert ? "text-white" : "text-navy-ink",
         )}
       >
-        {LETTERS.map((letter, i) => (
-          <span
-            key={letter.src}
-            className={cn("logo-letter relative inline-flex", letterH)}
-            style={{ aspectRatio: `${letter.w} / ${letter.h}` }}
-          >
-            <Image
-              src={letter.src}
-              alt=""
-              aria-hidden
-              width={letter.w}
-              height={letter.h}
-              className="h-full w-auto object-contain"
-            />
-          </span>
-        ))}
+        Onixs
       </span>
-      <span className="sr-only">Onixs</span>
     </a>
   );
 }

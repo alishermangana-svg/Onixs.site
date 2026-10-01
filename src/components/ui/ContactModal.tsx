@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { ContactForm } from "@/components/ui/ContactForm";
 
@@ -25,55 +24,47 @@ export function ContactModal({
     };
   }, [open, onClose]);
 
+  if (!open) return null;
+
   return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          className="fixed inset-0 z-[60] flex items-end justify-center p-4 sm:items-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
+    <div className="fixed inset-0 z-[60] flex items-end justify-center p-4 sm:items-center">
+      <button
+        type="button"
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        aria-label="Close contact form"
+        onClick={onClose}
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="contact-modal-title"
+        className="relative z-10 w-full max-w-lg overflow-hidden rounded-[24px] border border-border-light bg-white shadow-[0_30px_80px_rgba(11,59,54,0.2)]"
+      >
+        <div className="flex items-start justify-between gap-4 border-b border-border-light px-6 py-5">
+          <div>
+            <h2
+              id="contact-modal-title"
+              className="font-display text-xl font-bold text-navy-ink"
+            >
+              Start a project
+            </h2>
+            <p className="mt-1 text-sm text-muted">
+              Tell us what you need — we reply within one business day.
+            </p>
+          </div>
           <button
             type="button"
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            aria-label="Close contact form"
             onClick={onClose}
-          />
-          <motion.div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="contact-title"
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 16 }}
-            className="relative z-10 w-full max-w-lg rounded-[22px] border border-border-light bg-white p-6 shadow-[0_30px_80px_rgba(0,0,0,0.18)] md:p-8"
+            className="rounded-full p-2 text-muted transition hover:bg-mist hover:text-navy-ink"
+            aria-label="Close"
           >
-            <div className="mb-6 flex items-start justify-between gap-4">
-              <div>
-                <h2
-                  id="contact-title"
-                  className="text-2xl font-bold text-navy-ink"
-                >
-                  Start a project
-                </h2>
-                <p className="mt-1 text-sm text-muted">
-                  Usually within one business day.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={onClose}
-                className="rounded-full border border-border-light p-2 text-muted hover:text-navy-ink"
-                aria-label="Close"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            <ContactForm onSuccess={onClose} />
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="max-h-[min(70vh,560px)] overflow-y-auto px-6 py-5">
+          <ContactForm onSuccess={onClose} />
+        </div>
+      </div>
+    </div>
   );
 }

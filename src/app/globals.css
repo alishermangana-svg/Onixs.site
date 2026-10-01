@@ -47,6 +47,7 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: clip;
 }
 
 body {
@@ -54,6 +55,15 @@ body {
   color: var(--navy-ink);
   font-family: var(--font-jakarta), system-ui, sans-serif;
   min-height: 100vh;
+  overflow-x: clip;
+  -webkit-text-size-adjust: 100%;
+}
+
+img,
+video,
+svg {
+  max-width: 100%;
+  height: auto;
 }
 
 ::selection {
@@ -80,12 +90,34 @@ body {
 
 @media (min-width: 768px) {
   .container-x {
+    padding-inline: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-x {
     padding-inline: 2.5rem;
   }
 }
 
+.h-section {
+  font-size: clamp(1.65rem, 4.2vw, 3.35rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.12;
+  color: #0b0d10;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 section[id] {
-  scroll-margin-top: 6rem;
+  scroll-margin-top: 4.5rem;
+}
+
+@media (min-width: 768px) {
+  section[id] {
+    scroll-margin-top: 6rem;
+  }
 }
 
 .btn-primary {
@@ -149,14 +181,6 @@ section[id] {
   color: #17b8a0;
 }
 
-.h-section {
-  font-size: clamp(2rem, 4.4vw, 3.35rem);
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-  color: #0b0d10;
-}
-
 .tw-card {
   transition:
     transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1),
@@ -218,6 +242,12 @@ section[id] {
   z-index: 90;
   background: linear-gradient(90deg, #17b8a0, #2ec4ab);
   transform-origin: left;
+  will-change: width;
+}
+
+main > section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 720px;
 }
 
 .hero-glow {

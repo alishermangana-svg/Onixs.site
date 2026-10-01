@@ -7,8 +7,8 @@ export const site = {
   phone: "+44 7438 764784",
   address: "407 Chiswick High Rd., Chiswick, London W4 4AR, United Kingdom",
   hours: "Mon–Sat, 8am–4pm EST",
-  logo: "/images/onixs/onixs.png",
-  mark: "/images/onixs/onixs-o.png",
+  logo: "/images/onixs/onixs.webp",
+  mark: "/images/onixs/onixs-o.webp",
   positioning:
     "The elite marketplace for AI-powered technology and digital services.",
 };
