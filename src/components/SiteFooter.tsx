@@ -49,12 +49,12 @@ export function SiteFooter() {
 
   return (
     <>
-      <footer className="bg-[#0a1628] text-white">
+      <footer className="border-t border-border-light bg-[#f7faf9] text-navy-ink">
         <div className="container-x grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-4 lg:gap-8 lg:py-16">
           {/* Brand */}
           <div className="max-w-sm">
-            <OnixsLogo quiet size="sm" href="/" invert />
-            <p className="mt-5 text-sm leading-relaxed text-white/70">
+            <OnixsLogo quiet size="sm" href="/" />
+            <p className="mt-5 text-sm leading-relaxed text-body-light">
               Your digital studio for peace of mind. Onixs helps ambitious brands
               across the UK and worldwide with websites, apps, SEO, ads, design
               and VA support. One connected team from Chiswick, so you ship
@@ -64,10 +64,10 @@ export function SiteFooter() {
 
           {/* Services */}
           <div>
-            <p className="text-[12px] font-bold uppercase tracking-[0.14em] text-white">
+            <p className="text-[12px] font-bold uppercase tracking-[0.14em] text-navy-ink">
               Our Services
             </p>
-            <ul className="mt-5 space-y-2.5 text-sm text-white/70">
+            <ul className="mt-5 space-y-2.5 text-sm text-muted">
               {services.map((s) => (
                 <li key={s.slug}>
                   <Link
@@ -83,10 +83,10 @@ export function SiteFooter() {
 
           {/* Quick links */}
           <div>
-            <p className="text-[12px] font-bold uppercase tracking-[0.14em] text-white">
+            <p className="text-[12px] font-bold uppercase tracking-[0.14em] text-navy-ink">
               Quick Links
             </p>
-            <ul className="mt-5 space-y-2.5 text-sm text-white/70">
+            <ul className="mt-5 space-y-2.5 text-sm text-muted">
               {quickLinks.map((l) => (
                 <li key={l.href}>
                   <Link href={l.href} className="transition hover:text-brand">
@@ -99,10 +99,10 @@ export function SiteFooter() {
 
           {/* Support */}
           <div>
-            <p className="text-[12px] font-bold uppercase tracking-[0.14em] text-white">
+            <p className="text-[12px] font-bold uppercase tracking-[0.14em] text-navy-ink">
               Support
             </p>
-            <ul className="mt-5 space-y-3.5 text-sm text-white/70">
+            <ul className="mt-5 space-y-3.5 text-sm text-muted">
               <li>
                 <a
                   href={`tel:${site.phone.replace(/\s/g, "")}`}
@@ -135,7 +135,7 @@ export function SiteFooter() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={s.label}
-                  className="flex h-9 w-9 items-center justify-center rounded-full border border-white/25 text-[11px] font-bold text-white/80 transition hover:border-brand hover:text-brand"
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-border-light bg-white text-[11px] font-bold text-muted transition hover:border-brand hover:text-brand"
                 >
                   {s.label.slice(0, 2).toUpperCase()}
                 </a>
@@ -145,16 +145,16 @@ export function SiteFooter() {
         </div>
 
         {/* Copyright + badges */}
-        <div className="border-t border-white/10">
+        <div className="border-t border-border-light bg-white/60">
           <div className="container-x flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs text-white/55">
+            <p className="text-xs text-muted">
               © {year} Onixs. All rights reserved.
             </p>
             <div className="flex flex-wrap gap-2">
               {badges.map((b) => (
                 <span
                   key={b}
-                  className="rounded-full border border-white/25 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-white/80"
+                  className="rounded-full border border-border-light bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-navy-ink/70"
                 >
                   {b}
                 </span>
@@ -164,9 +164,9 @@ export function SiteFooter() {
         </div>
 
         {/* Disclaimer */}
-        <div className="border-t border-white/10">
+        <div className="border-t border-border-light">
           <div className="container-x py-5">
-            <p className="mx-auto max-w-4xl text-center text-[11px] leading-relaxed text-white/45">
+            <p className="mx-auto max-w-4xl text-center text-[11px] leading-relaxed text-muted">
               Onixs is a private digital studio based in Chiswick, London. We are
               not affiliated with or endorsed by any government department. We
               design, build and grow digital products for UK and international

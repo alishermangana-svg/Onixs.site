@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { contactSchema } from "@/lib/contact";
 import { rateLimit } from "@/lib/rate-limit";
 import { site } from "@/content/site";
+import { createLead } from "@/lib/leads-store";
 
 export async function POST(req: Request) {
   try {
@@ -33,16 +34,24 @@ export async function POST(req: Request) {
       );
     }
 
-    // Honeypot triggered — pretend success
     if (parsed.data.website) {
       return NextResponse.json({ ok: true });
     }
+
+    await createLead({
+      name: parsed.data.name,
+      email: parsed.data.email,
+      company: parsed.data.company,
+      service: parsed.data.service,
+      budget: parsed.data.budget || "",
+      message: parsed.data.message || "",
+    });
 
     const to = process.env.CONTACT_TO_EMAIL || site.email;
     const apiKey = process.env.RESEND_API_KEY;
 
     if (!apiKey) {
-      console.info("[contact] RESEND_API_KEY missing — logged enquiry only", {
+      console.info("[contact] RESEND_API_KEY missing — enquiry saved to admin", {
         name: parsed.data.name,
         email: parsed.data.email,
         service: parsed.data.service,
@@ -50,7 +59,7 @@ export async function POST(req: Request) {
       });
       return NextResponse.json({
         ok: true,
-        note: "Email provider not configured; enquiry logged.",
+        note: "Enquiry saved to admin inbox.",
       });
     }
 

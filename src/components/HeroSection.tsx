@@ -19,7 +19,7 @@ export function HeroSection({ onBookCall }: HeroSectionProps) {
   return (
     <section
       id="home"
-      className="relative isolate overflow-x-clip bg-[#fbfcfd] py-6 sm:py-8 md:py-10 lg:py-12 xl:py-14"
+      className="relative isolate flex min-h-[calc(100svh-3.75rem)] items-center overflow-x-clip bg-[#fbfcfd] py-10 sm:min-h-[calc(100svh-4.25rem)] sm:py-12 md:min-h-[calc(100svh-4.75rem)] md:py-14"
     >
       <div
         className="pointer-events-none absolute inset-0"
@@ -41,10 +41,10 @@ export function HeroSection({ onBookCall }: HeroSectionProps) {
         }}
       />
 
-      <div className="container-x relative z-10 grid w-full items-center gap-8 md:gap-10 lg:grid-cols-2 lg:gap-8 xl:gap-12">
+      <div className="container-x relative z-10 grid w-full items-center gap-10 md:gap-12 lg:grid-cols-2 lg:gap-12 xl:gap-16">
         {/* Copy */}
         <div className="min-w-0 max-w-xl lg:max-w-none">
-          <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-white/80 bg-white/70 px-3 py-1.5 text-[11px] font-semibold text-navy-ink shadow-[0_8px_30px_rgba(11,59,54,0.06)] backdrop-blur-md sm:text-[13px]">
+          <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-white/80 bg-white/70 px-3.5 py-2 text-[11px] font-semibold text-navy-ink shadow-[0_8px_30px_rgba(11,59,54,0.06)] backdrop-blur-md sm:text-[13px]">
             <span
               className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand/15 text-[11px] text-brand"
               aria-hidden
@@ -54,21 +54,21 @@ export function HeroSection({ onBookCall }: HeroSectionProps) {
             <span className="truncate">Trusted by ambitious brands worldwide</span>
           </div>
 
-          <h1 className="mt-4 text-[clamp(1.75rem,5vw+0.5rem,3.5rem)] font-extrabold leading-[1.08] tracking-[-0.04em] text-navy-ink sm:mt-5">
+          <h1 className="mt-6 text-[clamp(1.85rem,4.8vw+0.4rem,3.65rem)] font-extrabold leading-[1.08] tracking-[-0.04em] text-navy-ink sm:mt-7">
             Websites, apps &amp; growth from{" "}
             <span className="bg-gradient-to-r from-[#0b6f61] to-[#17b8a0] bg-clip-text text-transparent">
               one London studio.
             </span>
           </h1>
 
-          <p className="mt-3 max-w-md text-sm leading-relaxed text-body-light sm:mt-4 sm:text-base">
+          <p className="mt-5 max-w-md text-sm leading-relaxed text-body-light sm:mt-6 sm:text-base">
             Onixs designs, ships, and scales digital products for brands that
             want one accountable team, not a patchwork of freelancers.
           </p>
 
           <form
             onSubmit={onSubmit}
-            className="mt-5 flex w-full max-w-lg flex-col gap-2.5 sm:mt-6 sm:flex-row sm:items-center sm:gap-3"
+            className="mt-7 flex w-full max-w-lg flex-col gap-3 sm:mt-8 sm:flex-row sm:items-center"
           >
             <label className="sr-only" htmlFor="hero-email">
               Work email
@@ -90,7 +90,7 @@ export function HeroSection({ onBookCall }: HeroSectionProps) {
             </button>
           </form>
 
-          <div className="mt-3 flex flex-col gap-1.5 text-sm text-muted sm:mt-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+          <div className="mt-5 flex flex-col gap-2 text-sm text-muted sm:mt-6 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
             <Link href="/services" className="font-semibold text-brand hover:underline">
               Explore services →
             </Link>
@@ -98,7 +98,7 @@ export function HeroSection({ onBookCall }: HeroSectionProps) {
             <span className="text-[13px]">Free discovery call · No hard pitch</span>
           </div>
 
-          <div className="mt-6 grid grid-cols-3 gap-2 border-t border-border-light/80 pt-4 sm:mt-8 sm:gap-6 sm:pt-5">
+          <div className="mt-8 grid grid-cols-3 gap-3 border-t border-border-light/80 pt-6 sm:mt-10 sm:gap-8 sm:pt-7">
             {[
               { value: "50+", label: "Projects shipped" },
               { value: "8", label: "Services under one roof" },
@@ -108,7 +108,7 @@ export function HeroSection({ onBookCall }: HeroSectionProps) {
                 <p className="text-lg font-extrabold tracking-tight text-navy-ink sm:text-2xl">
                   {s.value}
                 </p>
-                <p className="mt-0.5 text-[10px] font-medium leading-snug text-muted sm:text-xs">
+                <p className="mt-1 text-[10px] font-medium leading-snug text-muted sm:text-xs">
                   {s.label}
                 </p>
               </div>
@@ -116,10 +116,10 @@ export function HeroSection({ onBookCall }: HeroSectionProps) {
           </div>
         </div>
 
-        {/* Visual */}
-        <div className="relative mx-auto w-full min-w-0 max-w-[420px] sm:max-w-[480px] lg:mx-0 lg:max-w-none">
-          <div className="relative overflow-hidden rounded-[22px] border border-white/80 bg-white/40 shadow-[0_28px_70px_rgba(11,59,54,0.14)] sm:rounded-[28px]">
-            <div className="relative aspect-[4/3] w-full">
+        {/* Visual — fills remaining viewport height on large screens */}
+        <div className="relative mx-auto flex w-full min-w-0 max-w-[440px] items-center sm:max-w-[520px] lg:mx-0 lg:h-full lg:max-h-[min(560px,calc(100svh-8rem))] lg:max-w-none">
+          <div className="relative w-full overflow-hidden rounded-[22px] border border-white/80 bg-white/40 shadow-[0_28px_70px_rgba(11,59,54,0.14)] sm:rounded-[28px]">
+            <div className="relative aspect-[4/3] w-full lg:aspect-auto lg:h-[min(520px,calc(100svh-10rem))] lg:min-h-[380px]">
               <Image
                 src="/hero/hero-visual.webp"
                 alt="Onixs product delivery dashboard on laptop and phone"
