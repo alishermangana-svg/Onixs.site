@@ -380,14 +380,36 @@ main > section {
   }
 }
 
+@keyframes websites-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.websites-card-in {
+  opacity: 0;
+  animation: websites-card-in 0.55s ease forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .marquee-track,
   .pulse-live,
   .logo-intro,
   .logo-mark-spin,
   .logo-word-cycle,
+  .websites-card-in,
   .animate-\[error-nudge_0\.45s_ease\] {
     animation: none !important;
+  }
+
+  .websites-card-in {
+    opacity: 1 !important;
+    transform: none !important;
   }
 
   .logo-word-cycle {

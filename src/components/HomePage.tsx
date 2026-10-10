@@ -67,90 +67,275 @@ function Stars({ n }: { n: number }) {
 
 const WEBSITES_PREVIEW = 6;
 
+function GhostCursor({
+  x,
+  y,
+  clicking,
+  visible,
+}: {
+  x: number;
+  y: number;
+  clicking: boolean;
+  visible: boolean;
+}) {
+  if (!visible) return null;
+
+  return (
+    <div
+      className="pointer-events-none absolute left-0 top-0 z-30 will-change-transform"
+      style={{
+        transform: `translate3d(${x}px, ${y}px, 0) scale(${clicking ? 0.88 : 1})`,
+        transition:
+          "transform 0.95s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease",
+        opacity: 1,
+      }}
+      aria-hidden
+    >
+      <svg
+        width="28"
+        height="28"
+        viewBox="0 0 24 24"
+        fill="none"
+        className="drop-shadow-[0_8px_16px_rgba(11,59,54,0.28)]"
+      >
+        <path
+          d="M5.5 3.2 19 12.1l-6.05 1.35L10.2 21.5 5.5 3.2Z"
+          fill="#0f2a24"
+          stroke="#fff"
+          strokeWidth="1.4"
+          strokeLinejoin="round"
+        />
+      </svg>
+      {clicking ? (
+        <span className="absolute left-1 top-1 h-8 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-brand/50 bg-brand/15" />
+      ) : null}
+    </div>
+  );
+}
+
 function WebsitesShowcase() {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const timers = useRef<number[]>([]);
+  const started = useRef(false);
+
   const [showAll, setShowAll] = useState(false);
+  const [unlocked, setUnlocked] = useState(false);
+  const [cursorOn, setCursorOn] = useState(false);
+  const [clicking, setClicking] = useState(false);
+  const [cursor, setCursor] = useState({ x: 28, y: 36 });
+
   const visible = showAll
     ? showcaseWebsites
     : showcaseWebsites.slice(0, WEBSITES_PREVIEW);
   const hasMore = showcaseWebsites.length > WEBSITES_PREVIEW;
 
-  return (
-    <>
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {visible.map((siteItem, i) => {
-          const host = siteItem.liveUrl
-            .replace(/^https?:\/\//, "")
-            .replace(/\/$/, "");
+  const clearTimers = () => {
+    timers.current.forEach((id) => window.clearTimeout(id));
+    timers.current = [];
+  };
 
-          return (
-            <Reveal key={siteItem.brand} delay={i * 0.05} from="bottom">
-              <article className="group flex h-full flex-col overflow-hidden rounded-[22px] border border-border-light bg-white transition duration-300 hover:-translate-y-1 hover:border-brand/30">
-                <div className="border-b border-border-light bg-[#eef2f0] px-3 py-2.5">
-                  <div className="flex items-center gap-2">
-                    <span className="flex gap-1.5" aria-hidden>
-                      <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
-                      <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
-                      <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
-                    </span>
-                    <div className="min-w-0 flex-1 truncate rounded-md bg-white px-2.5 py-1 text-center text-[11px] font-medium text-muted">
-                      {host}
+  const unlock = (fromSkip = false) => {
+    clearTimers();
+    setClicking(false);
+    setUnlocked(true);
+    if (fromSkip) {
+      setCursorOn(false);
+      return;
+    }
+    // Park ghost at the side after reveal
+    const root = rootRef.current;
+    if (root) {
+      const w = root.clientWidth;
+      setCursor({ x: Math.max(16, w - 56), y: 20 });
+    }
+    const hide = window.setTimeout(() => setCursorOn(false), 1200);
+    timers.current.push(hide);
+  };
+
+  const runGhostDemo = () => {
+    if (started.current || unlocked) return;
+    started.current = true;
+
+    const reduce = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    if (reduce) {
+      unlock(true);
+      return;
+    }
+
+    setCursorOn(true);
+    setCursor({ x: 28, y: 40 });
+
+    const move = window.setTimeout(() => {
+      const root = rootRef.current;
+      const btn = btnRef.current;
+      if (!root || !btn) {
+        unlock(true);
+        return;
+      }
+      const r = root.getBoundingClientRect();
+      const b = btn.getBoundingClientRect();
+      setCursor({
+        x: b.left - r.left + b.width * 0.55,
+        y: b.top - r.top + b.height * 0.45,
+      });
+    }, 450);
+
+    const click = window.setTimeout(() => setClicking(true), 1500);
+    const open = window.setTimeout(() => unlock(false), 1850);
+
+    timers.current.push(move, click, open);
+  };
+
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el) return;
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) runGhostDemo();
+      },
+      { threshold: 0.35 },
+    );
+    io.observe(el);
+
+    return () => {
+      io.disconnect();
+      clearTimers();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount observer
+  }, []);
+
+  return (
+    <div ref={rootRef} className="relative">
+      {!unlocked ? (
+        <div className="relative overflow-hidden rounded-[28px] border border-border-light bg-white px-6 py-14 text-center sm:px-10 sm:py-16">
+          <div
+            className="pointer-events-none absolute inset-0 opacity-60"
+            aria-hidden
+            style={{
+              background:
+                "radial-gradient(ellipse 60% 50% at 50% 30%, rgba(23,184,160,0.12), transparent 70%)",
+            }}
+          />
+          <p className="relative text-sm font-semibold text-brand">
+            Portfolio preview
+          </p>
+          <p className="relative mx-auto mt-3 max-w-md text-base text-body-light sm:text-lg">
+            Watch the cursor open our live sites — or skip straight to the work.
+          </p>
+          <div className="relative mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <button
+              ref={btnRef}
+              type="button"
+              onClick={() => unlock(true)}
+              className={cn(
+                "btn-primary transition",
+                clicking && "scale-95 ring-4 ring-brand/25",
+              )}
+            >
+              Show live sites
+            </button>
+            <button
+              type="button"
+              onClick={() => unlock(true)}
+              className="text-sm font-semibold text-muted underline-offset-4 hover:text-navy-ink hover:underline"
+            >
+              Skip intro
+            </button>
+          </div>
+          <GhostCursor
+            x={cursor.x}
+            y={cursor.y}
+            clicking={clicking}
+            visible={cursorOn}
+          />
+        </div>
+      ) : null}
+
+      {unlocked ? (
+        <>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {visible.map((siteItem, i) => {
+              const host = siteItem.liveUrl
+                .replace(/^https?:\/\//, "")
+                .replace(/\/$/, "");
+
+              return (
+                <article
+                  key={siteItem.brand}
+                  className="websites-card-in group flex h-full flex-col overflow-hidden rounded-[22px] border border-border-light bg-white transition duration-300 hover:-translate-y-1 hover:border-brand/30"
+                  style={{ animationDelay: `${Math.min(i, 8) * 70}ms` }}
+                >
+                  <div className="border-b border-border-light bg-[#eef2f0] px-3 py-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="flex gap-1.5" aria-hidden>
+                        <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
+                        <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
+                        <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
+                      </span>
+                      <div className="min-w-0 flex-1 truncate rounded-md bg-white px-2.5 py-1 text-center text-[11px] font-medium text-muted">
+                        {host}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <a
-                  href={siteItem.liveUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="relative block aspect-[16/10] w-full overflow-hidden bg-mist"
-                >
-                  <Image
-                    src={siteItem.image}
-                    alt={`${siteItem.brand} website built by Onixs`}
-                    fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    className="object-cover object-top"
-                    loading={i < 2 ? "eager" : "lazy"}
-                    quality={70}
-                  />
-                </a>
-
-                <div className="flex flex-1 flex-col gap-3 p-5">
-                  <div>
-                    <h3 className="font-display text-lg font-bold text-navy-ink">
-                      {siteItem.brand}
-                    </h3>
-                    <p className="mt-0.5 text-sm text-body-light">
-                      {siteItem.industry}
-                    </p>
-                  </div>
                   <a
                     href={siteItem.liveUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-auto text-sm font-semibold text-brand hover:underline"
+                    className="relative block aspect-[16/10] w-full overflow-hidden bg-mist"
                   >
-                    Visit live site ↗
+                    <Image
+                      src={siteItem.image}
+                      alt={`${siteItem.brand} website built by Onixs`}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover object-top"
+                      loading={i < 2 ? "eager" : "lazy"}
+                      quality={70}
+                    />
                   </a>
-                </div>
-              </article>
-            </Reveal>
-          );
-        })}
-      </div>
 
-      {hasMore ? (
-        <div className="mt-10 flex justify-center">
-          <button
-            type="button"
-            onClick={() => setShowAll((v) => !v)}
-            className="btn-primary"
-          >
-            {showAll ? "Show less" : "See more →"}
-          </button>
-        </div>
+                  <div className="flex flex-1 flex-col gap-3 p-5">
+                    <div>
+                      <h3 className="font-display text-lg font-bold text-navy-ink">
+                        {siteItem.brand}
+                      </h3>
+                      <p className="mt-0.5 text-sm text-body-light">
+                        {siteItem.industry}
+                      </p>
+                    </div>
+                    <a
+                      href={siteItem.liveUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-auto text-sm font-semibold text-brand hover:underline"
+                    >
+                      Visit live site ↗
+                    </a>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+
+          {hasMore ? (
+            <div className="mt-10 flex justify-center">
+              <button
+                type="button"
+                onClick={() => setShowAll((v) => !v)}
+                className="btn-primary"
+              >
+                {showAll ? "Show less" : "See more →"}
+              </button>
+            </div>
+          ) : null}
+        </>
       ) : null}
-    </>
+    </div>
   );
 }
 
@@ -274,33 +459,45 @@ export function HomePage() {
                 stitching the seams. We run them as one London studio.
               </p>
             </Reveal>
-            <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:items-stretch">
-              {services.map((s, i) => (
-                <Reveal key={s.id} delay={i * 0.04} className="h-full">
+            <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
+              {services.map((s) => (
+                <Reveal key={s.id} className="h-full">
                   <Link
                     href={`/services/${s.slug}`}
-                    className="group relative flex h-full min-h-[280px] flex-col overflow-hidden rounded-[20px] border border-border-light bg-card p-7 transition duration-400 hover:-translate-y-3 hover:border-transparent"
+                    className="group relative flex h-full min-h-[260px] flex-col overflow-hidden rounded-[22px] border border-border-light bg-[#fbfcfd] p-6 transition duration-300 hover:-translate-y-1 hover:border-brand/35 hover:bg-white hover:shadow-[0_18px_50px_rgba(11,59,54,0.08)] sm:p-7"
                   >
-                    <div
-                      className={cn(
-                        "pointer-events-none absolute inset-0 bg-gradient-to-br opacity-0 transition duration-400 group-hover:opacity-100",
-                        s.gradient,
-                      )}
+                    <span
+                      className="pointer-events-none absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-gradient-to-r from-[#0f8f7c] to-[#17b8a0] transition duration-300 group-hover:scale-x-100"
+                      aria-hidden
                     />
-                    <div className="relative flex h-full flex-col">
-                      <span className="font-display text-xs font-bold text-brand group-hover:text-white/80">
+                    <div className="flex items-start justify-between gap-3">
+                      <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#e8f6f3] font-display text-[13px] font-bold tracking-wide text-[#0f8f7c] transition group-hover:bg-brand group-hover:text-white">
                         {s.id}
                       </span>
-                      <h3 className="mt-4 text-[19px] font-bold tracking-tight text-navy-ink group-hover:text-white">
-                        {s.title}
-                      </h3>
-                      <p className="mt-3 flex-1 text-sm leading-relaxed text-body-light group-hover:text-white/85">
-                        {s.text}
-                      </p>
-                      <span className="mt-5 inline-flex text-sm font-semibold text-brand transition group-hover:translate-x-1 group-hover:text-white">
-                        Explore {s.title} →
+                      <span className="max-w-[58%] text-right text-[10px] font-semibold uppercase leading-snug tracking-[0.06em] text-muted">
+                        {s.group.replace(/^Integrated /, "")}
                       </span>
                     </div>
+                    <h3 className="mt-5 text-[18px] font-bold leading-snug tracking-tight text-navy-ink">
+                      {s.title}
+                    </h3>
+                    <p className="mt-2.5 flex-1 text-[13.5px] leading-relaxed text-body-light">
+                      {s.text}
+                    </p>
+                    <div className="mt-5 flex flex-wrap gap-1.5">
+                      {s.stack.slice(0, 2).map((tag) => (
+                        <span
+                          key={tag}
+                          className="rounded-md bg-white px-2 py-0.5 text-[10px] font-semibold text-muted ring-1 ring-border-light"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                    <span className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-brand transition group-hover:gap-2">
+                      Explore
+                      <span aria-hidden>→</span>
+                    </span>
                   </Link>
                 </Reveal>
               ))}
